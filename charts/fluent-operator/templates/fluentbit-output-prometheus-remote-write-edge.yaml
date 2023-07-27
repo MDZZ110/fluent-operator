@@ -9,9 +9,16 @@ metadata:
 spec:
   match: kubeedge.metrics.*
   prometheusRemoteWrite:
-    host: {{ .Values.fluentbit.edge.prometheusRemoteWrite.host }}
-    port: {{ .Values.fluentbit.edge.prometheusRemoteWrite.port }}
-    uri: /api/v1/write
+    host: {{ .Values.fluentbit.kubeedge.prometheusRemoteWrite.host }}
+    port: {{ .Values.fluentbit.kubeedge.prometheusRemoteWrite.port }}
+    uri: /push/{{ .Values.fluentbit.kubeedge.prometheusRemoteWrite.routerKey }}
+    {{- if .Values.fluentbit.kubeedge.prometheusRemoteWrite.tlsEnable }}
+    tls:
+      verify: false
+      caFile: /etc/kubeedge/ca/rootCA.crt
+      crtFile: /etc/kubeedge/certs/server.crt
+      keyFile: /etc/kubeedge/certs/server.key
+    {{- end }}
     addLabels : 
       app : fluentbit
       node: ${NODE_NAME}

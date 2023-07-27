@@ -15,6 +15,7 @@ spec:
   template:
     metadata:
       labels:
+        IndexByEdgeWize: "true"
         app.kubernetes.io/component: operator
         app.kubernetes.io/name: fluent-operator
         {{- if .Values.operator.labels }}
@@ -34,7 +35,7 @@ spec:
           path: /var/run/docker.sock
       initContainers:
       - name: setenv
-        image: {{ .Values.operator.initcontainer.repository }}:{{ .Values.operator.initcontainer.tag }}
+        image: {{ .Values.defaultImageRegistry }}{{ .Values.operator.initcontainer.repository }}:{{ .Values.operator.initcontainer.tag }}
         command:
         - /bin/sh
         - '-c'
@@ -54,7 +55,7 @@ spec:
         emptyDir: {}
       initContainers:
       - name: setenv
-        image: {{ .Values.operator.initcontainer.repository }}:{{ .Values.operator.initcontainer.tag }}
+        image: {{ .Values.defaultImageRegistry }}{{ .Values.operator.initcontainer.repository }}:{{ .Values.operator.initcontainer.tag }}
         command:
         - /bin/sh
         - '-c'
@@ -71,7 +72,7 @@ spec:
           emptyDir: {}
       initContainers:
       - name: setenv
-        image: {{ .Values.operator.initcontainer.repository }}:{{ .Values.operator.initcontainer.tag }}
+        image: {{ .Values.defaultImageRegistry }}{{ .Values.operator.initcontainer.repository }}:{{ .Values.operator.initcontainer.tag }}
         command:
         - /bin/sh
         - '-c'
@@ -85,7 +86,7 @@ spec:
       {{- end }}
       containers:
       - name: fluent-operator
-        image: {{ .Values.operator.container.repository }}:{{ .Values.operator.container.tag }}
+        image: {{ .Values.defaultImageRegistry }}{{ .Values.operator.container.repository }}:{{ .Values.operator.container.tag }}
         {{- if .Values.operator.securityContext }}
         securityContext:
           {{ toYaml .Values.operator.securityContext | nindent 10 }}
@@ -124,3 +125,10 @@ spec:
       securityContext:
         {{ toYaml .Values.operator.podSecurityContext | nindent 8 }}
       {{- end }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/edge
+                    operator: DoesNotExist
